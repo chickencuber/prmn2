@@ -28,6 +28,7 @@ pub fn start(cmd : Commands, c: Option<Data>) -> Cursive {
         }
         select.add_item(k.clone(), (v.clone(), k.clone()));
     }
+    select.sort_by_label();
     let event = OnEventView::new(select.scrollable()).on_event('f', move |siv| {
         let select = ui::fuzzy_picker(get_all_files(siv.user_data().unwrap(), None).expect("couldn't get the files"), move |siv, e| {
             let conf = siv.user_data::<Data>().unwrap();
