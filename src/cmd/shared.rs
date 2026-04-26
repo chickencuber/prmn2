@@ -53,7 +53,6 @@ pub fn use_category(
     let mut select = SelectView::new().on_submit(move |siv, v: &PathBuf| {
         output(Conf::Cursive(siv), out, v.to_string_lossy());
     });
-    select.sort_by_label();
     for file in fs::read_dir(&cat.dir)? {
         let path = file?.path();
         if !path.is_dir() {
@@ -68,6 +67,7 @@ pub fn use_category(
             .to_string();
         select.add_item(name, path);
     }
+    select.sort_by_label();
     let cate = cat.clone();
     return Ok(OnEventView::new(select.scrollable())
         .on_event('f', move |siv| {

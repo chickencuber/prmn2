@@ -42,11 +42,11 @@ where
     let items_for_render = items.clone();
 
     let mut select = SelectView::<T>::new().on_submit(on_select.clone());
-    select.sort_by_label();
 
     for item in &items_for_render {
         select.add_item(item.clone(), item.clone());
     }
+    select.sort_by_label();
 
     let select = select.with_name("list").scrollable().show_scrollbars(false);
 
