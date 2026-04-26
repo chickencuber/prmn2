@@ -26,4 +26,4 @@ pub const HELP: &str = r#"usage: prmn [subcommand] [flags]
     [none]: shows the menu
     help: shows this message
     l | last: opens the last project opened
-    f | find: opens the last project opened"#;
+    f | find: opens the search menu"#;
