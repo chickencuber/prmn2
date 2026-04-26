@@ -13,14 +13,14 @@ fn get_dir<T: Fn() -> Option<PathBuf>>(f: T) -> PathBuf {
     return s;
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Data {
     pub editor: String,
     pub categories: HashMap<String, Category>,
     #[serde(skip)]
     pub project_types: Vec<String>,
     #[serde(skip)]
-    pub last: Option<String>,
+    pub last: Option<PathBuf>,
 }
 impl Data {
     fn new_default() -> Self {
@@ -39,7 +39,7 @@ impl Data {
         if let Some(last) = &self.last {
             let mut data = get_dir(data_dir);
             data.push("last");
-            fs::write(&data, last)?;
+            fs::write(&data, last.to_str().unwrap())?;
         }
         Ok(())
     }
@@ -66,10 +66,7 @@ impl Data {
             fs::create_dir_all(&data)?;
         }
         data.push("last");
-        if !data.exists() {
-            fs::create_dir_all(&data)?;
-        }
-        s.last = fs::read_to_string(&data).ok();
+        s.last = fs::read_to_string(&data).map(|v| PathBuf::from(v)).ok();
         if s.last.is_some() {
             if !fs::exists(s.last.as_ref().unwrap())? {
                 s.last = None;
@@ -101,5 +98,5 @@ impl Data {
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Category {
     pub supported_types: Vec<String>,
-    pub parent_dir: String,
+    pub parent_dir: PathBuf,
 }

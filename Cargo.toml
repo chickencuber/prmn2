@@ -4,11 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-ron = "=0.12.1"
+ron = "0.12.1"
 serde = { version = "1.0.228", features = ["derive"] }
-cmdparsing = "2.1.3"
+cmdparsing = "2.1.5"
 dirs = "6.0.0"
 anyhow="1.0.102"
 tt-call="1.0.9"
 tt-equal="0.1.2"
 cursive = "0.21.1"
+fuzzy-matcher = "0.3.7"

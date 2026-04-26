@@ -1,4 +1,5 @@
 mod start;
+mod shared;
 use cmdparsing::define;
 pub use start::*;
 
