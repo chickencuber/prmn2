@@ -53,7 +53,7 @@ pub fn use_category(
     let mut select = SelectView::new().on_submit(move |siv, v: &PathBuf| {
         output(Conf::Cursive(siv), out, v.to_string_lossy());
     });
-    for file in fs::read_dir(&cat.parent_dir)? {
+    for file in fs::read_dir(&cat.dir)? {
         let path = file?.path();
         if !path.is_dir() {
             continue;
@@ -77,7 +77,7 @@ pub fn use_category(
                 move |siv, e| {
                     let conf = siv.user_data::<Data>().unwrap();
 
-                    let mut path = conf.categories[&n].parent_dir.clone();
+                    let mut path = conf.categories[&n].dir.clone();
                     path.push(e);
                     output(Conf::Cursive(siv), out, path.to_string_lossy());
                 },
@@ -94,7 +94,7 @@ pub fn use_category(
 pub fn get_all_files(conf: &Data, cat: Option<&Category>) -> Result<Vec<String>, anyhow::Error> {
     let mut v = vec![];
     if let Some(cat) = cat {
-        for file in fs::read_dir(&cat.parent_dir)? {
+        for file in fs::read_dir(&cat.dir)? {
             let path = file?.path();
             if !path.is_dir() {
                 continue;
@@ -106,7 +106,7 @@ pub fn get_all_files(conf: &Data, cat: Option<&Category>) -> Result<Vec<String>,
     }
 
     for (k, cat) in &conf.categories {
-        for file in fs::read_dir(&cat.parent_dir)? {
+        for file in fs::read_dir(&cat.dir)? {
             let path = file?.path();
             if !path.is_dir() {
                 continue;

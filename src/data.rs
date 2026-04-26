@@ -97,6 +97,6 @@ impl Data {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Category {
-    pub supported_types: Vec<String>,
-    pub parent_dir: PathBuf,
+    pub types: Vec<String>,
+    pub dir: PathBuf,
 }

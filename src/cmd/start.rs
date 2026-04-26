@@ -23,7 +23,7 @@ pub fn start(cmd : Commands, c: Option<Data>) -> Cursive {
         siv.add_layer(Dialog::new().content(select).title(name));
     });
     for (k, v) in &siv.user_data::<Data>().unwrap().categories {
-        if !PathBuf::from(&v.parent_dir).is_dir() {
+        if !PathBuf::from(&v.dir).is_dir() {
             continue;
         }
         select.add_item(k.clone(), (v.clone(), k.clone()));
@@ -32,7 +32,7 @@ pub fn start(cmd : Commands, c: Option<Data>) -> Cursive {
         let select = ui::fuzzy_picker(get_all_files(siv.user_data().unwrap(), None).expect("couldn't get the files"), move |siv, e| {
             let conf = siv.user_data::<Data>().unwrap();
             let o : Vec<String> = e.split("/").map(|s| s.to_string()).collect();
-            let mut path = conf.categories[&o[0]].parent_dir.clone();
+            let mut path = conf.categories[&o[0]].dir.clone();
             path.push(&o[1]);
             output(Conf::Cursive(siv), out, path.to_string_lossy());
         });
