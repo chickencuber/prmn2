@@ -15,6 +15,7 @@ pub fn last(mut args: Vec<String>) {
     if let Some(last) = c {
         if last.is_dir() {
             output(Conf::Data(&mut conf), cmd.out, last.to_string_lossy());
+            return;
         }
     }
     start(cmd, Some(conf)).run();
