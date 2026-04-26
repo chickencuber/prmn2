@@ -17,7 +17,6 @@ pub fn custom() -> Theme {
                 palette[Primary] = White.dark();
                 palette[TitlePrimary] = Blue.light();
                 palette[Secondary] = Blue.light();
-                palette[Highlight] = Blue.dark();
                 palette[HighlightText] = TerminalDefault;
             }
 
