@@ -1,20 +1,15 @@
-use std::io::{IsTerminal, stdout};
+use cursive::{CursiveExt, views::Dialog};
 
-use cursive::{CursiveExt, event::Event};
-
-use crate::cmd::{Commands, start};
-
-
-pub fn find(mut args: Vec<String>) {
-    args.pop(); //remove the command name
-    let mut cmd = Commands::from(args.clone());
-    if !stdout().is_terminal() {
-        cmd.out = true;
+use crate::{
+    cmd::{
+        Commands, selector, start
     }
-    let mut siv = start(cmd, None);
+};
 
-    siv.cb_sink().send(Box::new(|siv| {
-        siv.on_event(Event::Char('f'));
-    })).unwrap();
+pub fn find(cmd: Commands) {
+    let out = cmd.out;
+    let mut siv = start(cmd, None);
+    let select = selector(out, &mut siv);
+    siv.add_layer(Dialog::new().content(select).title("Search"));
     siv.run();
 }

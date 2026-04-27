@@ -8,15 +8,24 @@ use cmdparsing::cmd;
 use cursive::CursiveExt;
 use std::io::{IsTerminal, stdout};
 
-cmd! {
-    help: cmd::HELP;
-    :|args: Vec<String>| {
-        let mut cmd = Commands::from(args.clone());
+use crate::cmd::shared::print_output;
+
+fn fun<F: Fn(Commands)>(f: F)-> impl Fn(Commands) {
+    return move |mut cmd| {
         if !stdout().is_terminal() {
             cmd.out = true;
         }
+        f(cmd); 
+        print_output();
+    }
+}
+
+cmd! {
+    help: cmd::HELP;
+    .Commands;
+    :fun(|cmd| {
         cmd::start(cmd, None).run();
-    };
-    cmd::last=>"l"|"last",
-    cmd::find=>"f"|"find",
+    });
+    fun(cmd::last)=>"l"|"last",
+    fun(cmd::find)=>"f"|"find",
 }

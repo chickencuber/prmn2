@@ -1,4 +1,4 @@
-use std::{fs, os::unix::process::CommandExt, path::PathBuf, process::Command};
+use std::{fs, os::unix::process::CommandExt, path::PathBuf, process::Command, sync::Mutex};
 
 use cursive::{
     Cursive, View,
@@ -17,16 +17,27 @@ pub enum Conf<'a> {
     Data(&'a mut Data),
 }
 
+static OUTPUT: Mutex<String> = Mutex::new(String::new());
+
+pub fn print_output() {
+    let out = OUTPUT.lock().unwrap();
+    if *out == "" {
+        return;
+    }
+    print!("{out}");
+}
+
 pub fn output<T: ToString>(mut conf: Conf, out: bool, v: T) {
     match &mut conf {
         Conf::Cursive(siv) => {
             let mut conf = siv.user_data::<Data>().unwrap().clone();
             conf.last = Some(PathBuf::from(v.to_string()));
             conf.save().expect("failed to save");
-            
+
             if out {
-                println!("{}", v.to_string());
                 siv.quit();
+                let mut out = OUTPUT.lock().unwrap();
+                *out = v.to_string();
                 return;
             }
             let _ = Command::new(&conf.editor).arg(v.to_string()).exec();

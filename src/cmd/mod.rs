@@ -1,12 +1,12 @@
-mod start;
-mod shared;
+pub mod start;
+pub mod shared;
 use cmdparsing::define;
 pub use start::*;
 
-mod find;
+pub mod find;
 pub use find::*;
 
-mod last;
+pub mod last;
 pub use last::*;
 
 define! {
@@ -18,7 +18,7 @@ define! {
           args {};
 }
 
-pub const HELP: &str = r#"usage: prmn [subcommand] [flags]
+pub const HELP: &str = r#"usage: prmn [subcommand]
     ==========FLAGS==========
     -h(--help): displays this message
     -o(--out): outputs the project dir into stdout instead of opening the editor
