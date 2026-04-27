@@ -10,7 +10,7 @@ use std::io::{IsTerminal, stdout};
 
 use crate::cmd::shared::print_output;
 
-fn fun<F: Fn(Commands)>(f: F)-> impl Fn(Commands) {
+fn fun<F: Fn(Commands)+'static>(f: F)-> impl Fn(Commands) {
     return move |mut cmd| {
         if !stdout().is_terminal() {
             cmd.out = true;
@@ -29,3 +29,4 @@ cmd! {
     fun(cmd::last)=>"l"|"last",
     fun(cmd::find)=>"f"|"find",
 }
+

@@ -1,9 +1,9 @@
-use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fs, os::unix::fs::PermissionsExt, path::PathBuf};
 use ron::{
     de::from_str,
     ser::{PrettyConfig, to_string_pretty},
 };
+use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, fs, os::unix::fs::PermissionsExt, path::PathBuf};
 
 use dirs::{config_dir, data_dir};
 
@@ -90,6 +90,9 @@ impl Data {
             name.pop();
             name.pop();
             s.project_types.push(name);
+        }
+        for (_, cat) in &mut s.categories {
+            cat.types.retain(|t| s.project_types.contains(t));
         }
         return Ok(s);
     }

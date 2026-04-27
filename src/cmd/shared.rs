@@ -2,7 +2,7 @@ use std::{fs, os::unix::process::CommandExt, path::PathBuf, process::Command, sy
 
 use cursive::{
     Cursive, View,
-    view::{Resizable, Scrollable},
+    view::{Nameable, Resizable, Scrollable},
     views::{Dialog, OnEventView, SelectView},
 };
 
@@ -79,7 +79,9 @@ pub fn use_category(
         select.add_item(name, path);
     }
     select.sort_by_label();
+    let select = select.with_name("selector");
     let cate = cat.clone();
+    let types = cate.types.clone();
     return Ok(OnEventView::new(select.scrollable())
         .on_event('f', move |siv| {
             let n = name.clone();
@@ -99,6 +101,14 @@ pub fn use_category(
                     .content(select)
                     .title(format!("Search : {}", name)),
             );
+        })
+        .on_event('a', move |siv| {
+            //TASK(20260427-141604-587-n6-239): finish logic for adding dialogs
+            let mut select = SelectView::new();
+            for ty in &types {
+                select.add_item(ty, ty.clone());
+            }
+            siv.add_layer(Dialog::new().content(select).title("Create"));
         })
         .full_screen());
 }
