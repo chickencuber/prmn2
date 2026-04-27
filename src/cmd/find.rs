@@ -1,10 +1,6 @@
 use cursive::{CursiveExt, views::Dialog};
 
-use crate::{
-    cmd::{
-        Commands, selector, start
-    }
-};
+use crate::cmd::{Commands, selector, start};
 
 pub fn find(cmd: Commands) {
     let out = cmd.out;

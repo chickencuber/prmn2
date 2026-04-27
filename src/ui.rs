@@ -89,5 +89,8 @@ where
             }
         });
 
-    LinearLayout::vertical().child(search).child(select).full_screen()
+    LinearLayout::vertical()
+        .child(search)
+        .child(select)
+        .full_screen()
 }

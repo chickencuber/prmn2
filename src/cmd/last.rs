@@ -1,6 +1,13 @@
 use cursive::CursiveExt;
 
-use crate::{cmd::{Commands, shared::{Conf, output}, start}, data::Data};
+use crate::{
+    cmd::{
+        Commands,
+        shared::{Conf, output},
+        start,
+    },
+    data::Data,
+};
 
 pub fn last(cmd: Commands) {
     let mut conf = Data::new().expect("failed to load config");
