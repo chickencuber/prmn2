@@ -3,7 +3,7 @@ use std::{fs, os::unix::process::CommandExt, path::PathBuf, process::Command, sy
 use cursive::{
     Cursive, View,
     view::{Nameable, Resizable, Scrollable},
-    views::{Dialog, OnEventView, SelectView},
+    views::{Dialog, EditView, OnEventView, SelectView, TextView},
 };
 
 use crate::{
@@ -30,7 +30,7 @@ pub fn print_output() {
 pub fn output<T: ToString>(mut conf: Conf, out: bool, v: T) {
     match &mut conf {
         Conf::Cursive(siv) => {
-            let mut conf = siv.user_data::<Data>().unwrap().clone();
+            let conf = siv.user_data::<Data>().unwrap();
             conf.last = Some(PathBuf::from(v.to_string()));
             conf.save().expect("failed to save");
 
@@ -79,9 +79,10 @@ pub fn use_category(
         select.add_item(name, path);
     }
     select.sort_by_label();
-    let select = select.with_name("selector");
+    let select = select.with_name("selector-category-name");
     let cate = cat.clone();
     let types = cate.types.clone();
+    let dir = cate.dir.clone();
     return Ok(OnEventView::new(select.scrollable())
         .on_event('f', move |siv| {
             let n = name.clone();
@@ -102,15 +103,118 @@ pub fn use_category(
                     .title(format!("Search : {}", name)),
             );
         })
+        .on_event('d', |siv| {
+            let s = siv
+                .call_on_name(
+                    "selector-category-name",
+                    |view: &mut SelectView<PathBuf>| {
+                        let p = view.selection().unwrap();
+                        let name = p.file_name().unwrap().to_string_lossy().to_string();
+                        return (name, p);
+                    },
+                )
+                .unwrap();
+            let (name, path) = s;
+            siv.add_layer(
+                Dialog::new()
+                    .title("Confirm")
+                    .content(TextView::new(format!(
+                        "Are you sure you want to delete {}?",
+                        name,
+                    )))
+                    .button("Yes", move |siv| {
+                        siv.pop_layer();
+                        fs::remove_dir_all(path.as_ref()).expect("failed to delete file");
+                        siv.call_on_name("selector-category-name", |selector: &mut SelectView<PathBuf>| {
+                            let s = selector.selected_id().unwrap();
+                            selector.remove_item(s);
+                        });
+                    })
+                    .button("No", |siv| {
+                        siv.pop_layer();
+                    }),
+            )
+        })
         .on_event('a', move |siv| {
+            let d = dir.clone();
             //TASK(20260427-141604-587-n6-239): finish logic for adding dialogs
-            let mut select = SelectView::new();
-            for ty in &types {
-                select.add_item(ty, ty.clone());
+            if types.len() == 1 {
+                add_project(siv, Some(types[0].clone()), d, out);
+            } else if types.len() == 0 {
+                add_project(siv, None, d, out);
+            } else {
+                let mut select = SelectView::new();
+                for ty in &types {
+                    select.add_item(ty, ty.clone());
+                }
+                let select = select
+                    .on_submit(move |siv, item: &String| {
+                        siv.pop_layer();
+                        add_project(siv, Some(item.clone()), d.clone(), out);
+                    })
+                    .scrollable();
+                siv.add_layer(Dialog::new().content(select).title("Create"));
             }
-            siv.add_layer(Dialog::new().content(select).title("Create"));
         })
         .full_screen());
+}
+
+fn add_project(siv: &mut Cursive, ty: Option<String>, dir: PathBuf, out: bool) {
+    let input = EditView::new().on_submit(move |siv, val| {
+        let val = val.trim();
+        if val == "" {
+            siv.pop_layer();
+        }
+        siv.pop_layer();
+        let mut dir = dir.clone();
+        dir.push(val);
+        fs::create_dir(&dir).unwrap();
+        let mut types = Data::types_dir();
+        types.push(format!(
+            "{}.sh",
+            ty.as_ref().unwrap_or(&"Blank".to_string())
+        ));
+        let child = Command::new(types)
+            .current_dir(&dir)
+            .output()
+            .expect("failed to run command");
+        if !child.status.success() {
+            fs::remove_dir_all(&dir).unwrap();
+            siv.add_layer(
+                Dialog::new()
+                    .content(TextView::new(String::from_utf8_lossy(&child.stderr)).scrollable())
+                    .title("Error")
+                    .button("Ok", |siv| {
+                        siv.pop_layer();
+                    }),
+            );
+        } else {
+            let val = val.to_string();
+            siv.call_on_name("selector-category-name", |s: &mut SelectView<PathBuf>| {
+                s.add_item(&val, dir.clone());
+                s.sort_by_label();
+            });
+            siv.add_layer(
+                Dialog::new()
+                    .title("Open")
+                    .button("Yes", move |siv| {
+                        output(Conf::Cursive(siv), out, dir.to_str().unwrap());
+                        siv.pop_layer();
+                    })
+                    .button("No", |siv| {
+                        siv.pop_layer();
+                    }),
+            );
+        }
+    });
+    siv.add_layer(
+        Dialog::new()
+            .content(input)
+            .title("Name")
+            .button("Cancel", |siv| {
+                siv.pop_layer();
+            }),
+    );
 }
 
 pub fn get_all_files(conf: &Data, cat: Option<&Category>) -> Result<Vec<String>, anyhow::Error> {

@@ -23,6 +23,11 @@ pub struct Data {
     pub last: Option<PathBuf>,
 }
 impl Data {
+    pub fn types_dir() -> PathBuf {
+        let mut path = get_dir(config_dir);
+        path.push("types");
+        return path;
+    }
     fn new_default() -> Self {
         Self {
             editor: "nvim".to_string(),
