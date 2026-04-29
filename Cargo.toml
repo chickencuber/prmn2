@@ -11,5 +11,8 @@ dirs = "6.0.0"
 anyhow="1.0.102"
 tt-call="1.0.9"
 tt-equal="0.1.2"
-cursive = "0.21.1"
 fuzzy-matcher = "0.3.7"
+[dependencies.cursive]
+version = "0.21.1"
+default-features = false
+features = ["termion-backend"]

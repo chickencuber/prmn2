@@ -13,7 +13,7 @@ use fuzzy_matcher::{FuzzyMatcher, skim::SkimMatcherV2};
 use crate::{data::Data, wrapper::{Mode, ModeView}};
 
 pub fn setup(conf: Data) -> Cursive {
-    let mut siv = Cursive::default();
+    let mut siv = Cursive::new();
     siv.set_theme(crate::theme::custom());
     let mut i = 1;
 
