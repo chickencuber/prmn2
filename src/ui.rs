@@ -3,32 +3,131 @@ use cursive::{
     event::{Event, Key},
     utils::markup::StyledString,
     view::{Nameable, Resizable, Scrollable},
-    views::{EditView, LinearLayout, SelectView},
+    views::{
+        Dialog, DummyView, EditView, LayerPosition, LinearLayout, Menubar, SelectView, TextView,
+    },
 };
 
 use fuzzy_matcher::{FuzzyMatcher, skim::SkimMatcherV2};
 
-pub fn setup() -> Cursive {
+use crate::{data::Data, wrapper::{Mode, ModeView}};
+
+pub fn setup(conf: Data) -> Cursive {
     let mut siv = Cursive::default();
     siv.set_theme(crate::theme::custom());
-    let quit_or_back = |s: &mut Cursive| {
-        if s.screen().len() <= 1 {
-            s.quit();
+    let mut i = 1;
+
+    if conf.show_menubar {
+        add_menubar(&mut siv);
+    }
+    if conf.show_hint {
+        add_help_hint(&mut siv, &mut i);
+    }
+    siv.set_user_data(conf);
+
+    siv.add_global_callback('j', |siv| {
+        siv.on_event(Event::Key(Key::Down));
+    });
+    siv.add_global_callback('k', |siv| {
+        siv.on_event(Event::Key(Key::Up));
+    });
+
+    let quit_or_back = move |siv: &mut Cursive| {
+        if siv.screen().len() <= i {
+            siv.quit();
         } else {
-            s.pop_layer();
+            pop_layer(siv);
         }
     };
-
     siv.add_global_callback('q', quit_or_back);
     siv.add_global_callback(Key::Esc, quit_or_back);
-    siv.add_global_callback('j', |s| {
-        s.on_event(Event::Key(Key::Down));
-    });
-
-    siv.add_global_callback('k', |s| {
-        s.on_event(Event::Key(Key::Up));
+    siv.add_global_callback('?', |siv| {
+        help_dialog(siv);
     });
     return siv;
+}
+
+const HELP_MENU_TEXT: &str = r#"f: enters find mode
+Escape/q: goes back/quits
+h/↑: Up
+j/↓: Down
+===When in Category Screen===
+d: Deletes a Project
+a: Adds a Project
+r: Renames a Project"#;
+
+fn help_dialog(siv: &mut Cursive) {
+    if siv.find_name::<Dialog>("help-dialog").is_some() {
+        return;
+    }
+    let dialog = Dialog::new()
+        .content(TextView::new(HELP_MENU_TEXT))
+        .title("HELP")
+        .button("OK", |siv| {
+            pop_layer(siv);
+        })
+        .with_name("help-dialog");
+    push_layer(siv, dialog);
+}
+
+fn add_menubar(siv: &mut Cursive) {
+    siv.set_autohide_menu(false);
+    populate_menubar(siv.menubar(), None);
+}
+
+pub fn populate_menubar(menubar: &mut Menubar, mode: Option<Mode>) {
+    menubar.clear();
+    menubar.add_leaf("Help", |siv| {
+        help_dialog(siv);
+    });
+    menubar.add_leaf("Find", |siv| {
+        siv.on_event(Event::Char('f'));
+    });
+    if let Some(mode) = mode {
+        menubar.add_delimiter();
+        match mode {
+            Mode::Category => {
+                menubar.add_leaf("Add", |siv| {
+                    siv.on_event(Event::Char('a'));
+                });
+                menubar.add_leaf("Delete Selected", |siv| {
+                    siv.on_event(Event::Char('d'));
+                });
+                menubar.add_leaf("Rename Selected", |siv| {
+                    siv.on_event(Event::Char('r'));
+                });
+            }
+        }
+    }
+}
+
+fn change_layer(siv: &mut Cursive) {
+    let s = siv.screen().get(LayerPosition::FromFront(0)).unwrap();
+    let mode = s.downcast_ref::<ModeView>().map(|v| v.mode.clone());
+    populate_menubar(siv.menubar(), mode);
+}
+
+pub fn pop_layer(siv: &mut Cursive) {
+    siv.pop_layer();
+    change_layer(siv);
+}
+
+pub fn push_layer<T: View>(siv: &mut Cursive, view: T) {
+    siv.add_layer(view);
+    change_layer(siv);
+}
+
+fn add_help_hint(siv: &mut Cursive, i: &mut usize) {
+    let hint = LinearLayout::vertical()
+        .child(DummyView::new().full_height())
+        .child(
+            LinearLayout::horizontal()
+                .child(DummyView::new().full_width())
+                .child(TextView::new("help: ? ")),
+        );
+
+    siv.add_fullscreen_layer(hint);
+    *i += 1;
 }
 
 pub fn fuzzy_picker<T, F>(items: Vec<T>, on_select: F) -> impl View

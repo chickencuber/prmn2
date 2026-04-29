@@ -12,7 +12,7 @@ use crate::{
         shared::{Conf, get_all_files, output, use_category},
     },
     data::{Category, Data},
-    ui,
+    ui::{self, push_layer}, wrapper::{Mode, Modeable},
 };
 
 pub fn selector(out: bool, siv: &mut Cursive) -> impl View {
@@ -28,13 +28,11 @@ pub fn selector(out: bool, siv: &mut Cursive) -> impl View {
     );
 }
 
-pub fn start(cmd: Commands, c: Option<Data>) -> Cursive {
-    let mut siv = ui::setup();
-    siv.set_user_data(c.unwrap_or_else(|| Data::new().expect("failed to load config")));
+pub fn start(cmd: Commands, mut siv: Cursive) -> Cursive {
     let out = cmd.out;
     let mut select = SelectView::new().on_submit(move |siv, (cat, name): &(Category, String)| {
         let select = use_category(cat, &cmd, name.clone()).expect("failed to read dir");
-        siv.add_layer(Dialog::new().content(select).title(name));
+        push_layer(siv, Dialog::new().content(select).title(name).with_mode(Mode::Category));
     });
     for (k, v) in &siv.user_data::<Data>().unwrap().categories {
         if !PathBuf::from(&v.dir).is_dir() {
@@ -45,8 +43,8 @@ pub fn start(cmd: Commands, c: Option<Data>) -> Cursive {
     select.sort_by_label();
     let event = OnEventView::new(select.scrollable()).on_event('f', move |siv| {
         let select = selector(out, siv);
-        siv.add_layer(Dialog::new().content(select).title("Search"));
+        push_layer(siv, Dialog::new().content(select).title("Search"));
     });
-    siv.add_layer(event.full_screen());
+    push_layer(&mut siv, event.full_screen());
     siv
 }

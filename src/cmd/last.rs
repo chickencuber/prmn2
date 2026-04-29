@@ -1,4 +1,4 @@
-use cursive::CursiveExt;
+use cursive::Cursive;
 
 use crate::{
     cmd::{
@@ -9,14 +9,14 @@ use crate::{
     data::Data,
 };
 
-pub fn last(cmd: Commands) {
-    let mut conf = Data::new().expect("failed to load config");
+pub fn last(cmd: Commands, mut siv: Cursive) -> Option<Cursive> {
+    let conf = siv.user_data::<Data>().unwrap();
     let c = conf.last.clone();
     if let Some(last) = c {
         if last.is_dir() {
-            output(Conf::Data(&mut conf), cmd.out, last.to_string_lossy());
-            return;
+            output(Conf::Data(conf), cmd.out, last.to_string_lossy());
+            return None;
         }
     }
-    start(cmd, Some(conf)).run();
+    Some(start(cmd, siv))
 }
