@@ -77,23 +77,23 @@ fn add_menubar(siv: &mut Cursive) {
 
 pub fn populate_menubar(menubar: &mut Menubar, mode: Option<Mode>) {
     menubar.clear();
-    menubar.add_leaf("Help", |siv| {
+    menubar.add_leaf("<Help>", |siv| {
         help_dialog(siv);
     });
-    menubar.add_leaf("Find", |siv| {
+    menubar.add_leaf("<Find>", |siv| {
         siv.on_event(Event::Char('f'));
     });
     if let Some(mode) = mode {
         menubar.add_delimiter();
         match mode {
             Mode::Category => {
-                menubar.add_leaf("Add", |siv| {
+                menubar.add_leaf("<Add>", |siv| {
                     siv.on_event(Event::Char('a'));
                 });
-                menubar.add_leaf("Delete Selected", |siv| {
+                menubar.add_leaf("<Delete Selected>", |siv| {
                     siv.on_event(Event::Char('d'));
                 });
-                menubar.add_leaf("Rename Selected", |siv| {
+                menubar.add_leaf("<Rename Selected>", |siv| {
                     siv.on_event(Event::Char('r'));
                 });
             }
