@@ -1,9 +1,7 @@
 use std::{fs, os::unix::process::CommandExt, path::PathBuf, process::Command, sync::Mutex};
 
 use cursive::{
-    Cursive, View,
-    view::{Nameable, Resizable, Scrollable},
-    views::{Dialog, EditView, OnEventView, SelectView, TextView},
+    Cursive, View, event::{Event, EventTrigger, Key}, view::{Nameable, Resizable, Scrollable}, views::{Dialog, EditView, OnEventView, SelectView, TextView}
 };
 
 use crate::{
@@ -18,6 +16,31 @@ pub enum Conf<'a> {
 }
 
 static OUTPUT: Mutex<String> = Mutex::new(String::new());
+
+fn open_context_menu(siv: &mut cursive::Cursive) {
+    let menu = SelectView::<&str>::new()
+        .item("Rename", "rename")
+        .item("Delete", "delete")
+        .item("Open", "open")
+        .on_submit(|siv, action| {
+            pop_layer(siv);
+            
+            match *action {
+                "rename" => {  
+                    siv.on_event(Event::Char('r'));
+                }
+                "delete" => { 
+                    siv.on_event(Event::Char('d'));
+                }
+                "open" => {
+                    siv.on_event(Event::Key(Key::Enter));
+                }
+                _ => {}
+            }
+        });
+
+    push_layer(siv, Dialog::around(menu).title("Menu"));
+}
 
 pub fn print_output() {
     let out = OUTPUT.lock().unwrap();
@@ -215,6 +238,9 @@ pub fn use_category(
                     .scrollable();
                 push_layer(siv, Dialog::new().content(select).title("Create"));
             }
+        })
+        .on_event(EventTrigger::mouse(), |siv| {
+            open_context_menu(siv);
         })
         .full_screen());
 }
