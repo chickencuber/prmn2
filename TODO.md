@@ -1,5 +1,5 @@
 # TODOS
-- [X] handle when out is false
-- [X] finish logic for adding dialogs
-- [X] add a context menu for deleting and renaming
-- [ ] make this function behave more like fzf
+- [X] handle when out is false: [TASK(20260425-151409-793-n6-941)](./.tasks/20260425-151409-793-n6-941)  
+- [X] finish logic for adding dialogs: [TASK(20260427-141604-587-n6-239)](./.tasks/20260427-141604-587-n6-239)  
+- [X] add a context menu for deleting and renaming: [TASK(20260429-134519-000-n6-759)](./.tasks/20260429-134519-000-n6-759)  
+- [ ] make this function behave more like fzf: [TASK(20260430-082315-918-n6-435)](./.tasks/20260430-082315-918-n6-435)  
