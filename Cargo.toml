@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 ron = "0.12.1"
 serde = { version = "1.0.228", features = ["derive"] }
-cmdparsing = "2.2.4"
+cmdparsing = "2.2.5"
 dirs = "6.0.0"
 anyhow="1.0.102"
 tt-call="1.0.9"

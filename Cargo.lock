@@ -53,9 +53,9 @@ checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
 name = "cmdparsing"
-version = "2.2.4"
+version = "2.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1b749d2928689bcf1614dd527b0c36736fedd4e6a76441bb20d3d60ecd74c14"
+checksum = "8114a4ff6ddb50c0156fcc31d13c61652615699bcb28890efc53c0f253da7259"
 dependencies = [
  "tt-call",
  "tt-equal",

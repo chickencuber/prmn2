@@ -20,10 +20,10 @@ define! {
 
 pub const HELP: &str = r#"usage: prmn [subcommand]
     ==========FLAGS==========
-    -h(--help): displays this message
-    -o(--out): outputs the project dir into stdout instead of opening the editor
+    -h | --help | -?: displays this message
+    -o | --out: outputs the project dir into stdout instead of opening the editor
     =======SUB COMMANDS======
     [none]: shows the menu
-    help: shows this message
+    help | ?: shows this message
     l | last: opens the last project opened
     f | find: opens the search menu"#;
