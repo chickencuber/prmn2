@@ -130,6 +130,7 @@ fn add_help_hint(siv: &mut Cursive, i: &mut usize) {
     *i += 1;
 }
 
+//TODO make this function behave more like fzf
 pub fn fuzzy_picker<T, F>(items: Vec<T>, on_select: F) -> impl View
 where
     T: Clone + 'static + Send + Sync + Into<StyledString> + ToString,
