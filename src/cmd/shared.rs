@@ -1,7 +1,10 @@
 use std::{fs, os::unix::process::CommandExt, path::PathBuf, process::Command, sync::Mutex};
 
 use cursive::{
-    Cursive, View, event::{Event, EventTrigger, Key}, view::{Nameable, Resizable, Scrollable}, views::{Dialog, EditView, OnEventView, SelectView, TextView}
+    Cursive, View,
+    event::{Event, EventTrigger, Key},
+    view::{Nameable, Resizable, Scrollable},
+    views::{Dialog, EditView, OnEventView, SelectView, TextView},
 };
 
 use crate::{
@@ -25,12 +28,12 @@ fn open_context_menu(siv: &mut cursive::Cursive) {
         .item("Close", "close")
         .on_submit(|siv, action| {
             pop_layer(siv);
-            
+
             match *action {
-                "rename" => {  
+                "rename" => {
                     siv.on_event(Event::Char('r'));
                 }
-                "delete" => { 
+                "delete" => {
                     siv.on_event(Event::Char('d'));
                 }
                 "open" => {
@@ -124,7 +127,8 @@ pub fn use_category(
                     output(Conf::Cursive(siv), out, path.to_string_lossy());
                 },
             );
-            push_layer(siv, 
+            push_layer(
+                siv,
                 Dialog::new()
                     .content(select)
                     .title(format!("Search : {}", name)),
@@ -142,27 +146,45 @@ pub fn use_category(
                 )
                 .unwrap();
             let (name, path) = s;
-            push_layer(siv, 
-                Dialog::new()
-                    .title("Confirm")
-                    .content(TextView::new(format!(
-                        "Are you sure you want to delete {}?",
-                        name,
-                    )))
-                    .button("Yes", move |siv| {
-                        pop_layer(siv);
-                        fs::remove_dir_all(path.as_ref()).expect("failed to delete file");
-                        siv.call_on_name(
-                            "selector-category-name",
-                            |selector: &mut SelectView<PathBuf>| {
-                                let s = selector.selected_id().unwrap();
-                                selector.remove_item(s);
-                            },
-                        );
-                    })
-                    .button("No", |siv| {
-                        pop_layer(siv);
-                    }),
+            let p = path.clone();
+            push_layer(
+                siv,
+                OnEventView::new(
+                    Dialog::new()
+                        .title("Confirm")
+                        .content(TextView::new(format!(
+                            "Are you sure you want to delete {}?",
+                            name,
+                        )))
+                        .button("Yes", move |siv| {
+                            pop_layer(siv);
+                            fs::remove_dir_all(path.as_ref()).expect("failed to delete file");
+                            siv.call_on_name(
+                                "selector-category-name",
+                                |selector: &mut SelectView<PathBuf>| {
+                                    let s = selector.selected_id().unwrap();
+                                    selector.remove_item(s);
+                                },
+                            );
+                        })
+                        .button("No", |siv| {
+                            pop_layer(siv);
+                        }),
+                )
+                .on_event('n', |siv| {
+                    pop_layer(siv);
+                })
+                .on_event('y', move |siv| {
+                    pop_layer(siv);
+                    fs::remove_dir_all(p.as_ref()).expect("failed to delete file");
+                    siv.call_on_name(
+                        "selector-category-name",
+                        |selector: &mut SelectView<PathBuf>| {
+                            let s = selector.selected_id().unwrap();
+                            selector.remove_item(s);
+                        },
+                    );
+                }),
             )
         })
         .on_event('r', move |siv| {
@@ -178,41 +200,47 @@ pub fn use_category(
                 )
                 .unwrap();
             let (name, path) = s;
-            let fun = move |siv:&mut Cursive, val: &str| {
-                        pop_layer(siv);
-                        let mut to = d.clone();
-                        to.push(&val);
-                        if let Err(e) = fs::rename(path.as_ref(), to) {
-                            push_layer(siv, 
-                                Dialog::new()
-                                    .content(TextView::new(format!("{}", e)).scrollable())
-                                    .title("Error")
-                                    .button("Ok", |siv| {
-                                        pop_layer(siv);
-                                    }),
-                            );
-                        } else {
-                            let mut d = d.clone();
-                            d.push(val);
-                            siv.call_on_name(
-                                "selector-category-name",
-                                move |selector: &mut SelectView<PathBuf>| {
-                                    let s = selector.selected_id().unwrap();
-                                    selector.remove_item(s);
-                                    selector.add_item(val, d);
-                                    selector.sort_by_label();
-                                },
-                            );
-                        }
-                    };
-            push_layer(siv, 
+            let fun = move |siv: &mut Cursive, val: &str| {
+                pop_layer(siv);
+                let mut to = d.clone();
+                to.push(&val);
+                if let Err(e) = fs::rename(path.as_ref(), to) {
+                    push_layer(
+                        siv,
+                        Dialog::new()
+                            .content(TextView::new(format!("{}", e)).scrollable())
+                            .title("Error")
+                            .button("Ok", |siv| {
+                                pop_layer(siv);
+                            }),
+                    );
+                } else {
+                    let mut d = d.clone();
+                    d.push(val);
+                    siv.call_on_name(
+                        "selector-category-name",
+                        move |selector: &mut SelectView<PathBuf>| {
+                            let s = selector.selected_id().unwrap();
+                            selector.remove_item(s);
+                            selector.add_item(val, d);
+                            selector.sort_by_label();
+                        },
+                    );
+                }
+            };
+            push_layer(
+                siv,
                 Dialog::new()
                     .title(format!("Rename {} to", name))
-                    .content(EditView::new().on_submit(fun.clone()).with_name("Rename-textbox"))
+                    .content(
+                        EditView::new()
+                            .on_submit(fun.clone())
+                            .with_name("Rename-textbox"),
+                    )
                     .button("Confirm", move |siv| {
-                        let s = siv.call_on_name("Rename-textbox", |e: &mut EditView| {
-                            e.get_content()
-                        }).unwrap();
+                        let s = siv
+                            .call_on_name("Rename-textbox", |e: &mut EditView| e.get_content())
+                            .unwrap();
                         fun(siv, s.as_str());
                     })
                     .button("Cancel", |siv| {
@@ -248,7 +276,7 @@ pub fn use_category(
 }
 
 fn add_project(siv: &mut Cursive, ty: Option<String>, dir: PathBuf, out: bool) {
-    let fun = move |siv:&mut Cursive, val: &str| {
+    let fun = move |siv: &mut Cursive, val: &str| {
         let val = val.trim();
         if val == "" {
             pop_layer(siv);
@@ -268,7 +296,8 @@ fn add_project(siv: &mut Cursive, ty: Option<String>, dir: PathBuf, out: bool) {
             .expect("failed to run command");
         if !child.status.success() {
             fs::remove_dir_all(&dir).unwrap();
-            push_layer(siv, 
+            push_layer(
+                siv,
                 Dialog::new()
                     .content(TextView::new(String::from_utf8_lossy(&child.stderr)).scrollable())
                     .title("Error")
@@ -282,28 +311,43 @@ fn add_project(siv: &mut Cursive, ty: Option<String>, dir: PathBuf, out: bool) {
                 s.add_item(&val, dir.clone());
                 s.sort_by_label();
             });
-            push_layer(siv, 
-                Dialog::new()
-                    .title("Open")
-                    .button("Yes", move |siv| {
-                        output(Conf::Cursive(siv), out, dir.to_str().unwrap());
-                        pop_layer(siv);
-                    })
-                    .button("No", |siv| {
-                        pop_layer(siv);
-                    }),
+            let d = dir.clone();
+            push_layer(
+                siv,
+                OnEventView::new(
+                    Dialog::new()
+                        .title("Open")
+                        .content(TextView::new(val))
+                        .button("Yes", move |siv| {
+                            output(Conf::Cursive(siv), out, dir.to_str().unwrap());
+                            pop_layer(siv);
+                        })
+                        .button("No", |siv| {
+                            pop_layer(siv);
+                        }),
+                )
+                .on_event('y', move |siv| {
+                    output(Conf::Cursive(siv), out, d.to_str().unwrap());
+                    pop_layer(siv);
+                })
+                .on_event('n', move |siv| {
+                    pop_layer(siv);
+                }),
             );
         }
     };
-    let input = EditView::new().on_submit(fun.clone()).with_name("add-project-input");
-    push_layer(siv, 
+    let input = EditView::new()
+        .on_submit(fun.clone())
+        .with_name("add-project-input");
+    push_layer(
+        siv,
         Dialog::new()
             .content(input)
             .title("Name")
             .button("Confirm", move |siv| {
-                let s = siv.call_on_name("add-project-input", |inp: &mut EditView| {
-                    inp.get_content()
-                }).unwrap();
+                let s = siv
+                    .call_on_name("add-project-input", |inp: &mut EditView| inp.get_content())
+                    .unwrap();
                 fun(siv, s.as_str());
             })
             .button("Cancel", |siv| {

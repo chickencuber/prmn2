@@ -10,9 +10,11 @@ use cursive::{
 
 use fuzzy_matcher::{FuzzyMatcher, skim::SkimMatcherV2};
 
-use crate::{data::Data, wrapper::{Mode, ModeView}};
+use crate::{
+    cmd::shared::{Conf, output}, data::Data, wrapper::{Mode, ModeView}
+};
 
-pub fn setup(conf: Data) -> Cursive {
+pub fn setup(conf: Data, out: bool) -> Cursive {
     let mut siv = Cursive::new();
     siv.set_theme(crate::theme::custom());
     let mut i = 1;
@@ -30,6 +32,15 @@ pub fn setup(conf: Data) -> Cursive {
     });
     siv.add_global_callback('k', |siv| {
         siv.on_event(Event::Key(Key::Up));
+    });
+    siv.add_global_callback('l', move |siv| {
+        let conf = siv.user_data::<Data>().unwrap();
+        let c = conf.last.clone();
+        if let Some(last) = c {
+            if last.is_dir() {
+                output(Conf::Data(conf), out, last.to_string_lossy());
+            }
+        }
     });
 
     let quit_or_back = move |siv: &mut Cursive| {
