@@ -36,9 +36,7 @@ fn open_context_menu(siv: &mut cursive::Cursive) {
                 "open" => {
                     siv.on_event(Event::Key(Key::Enter));
                 }
-                "close" => {
-                    siv.on_event(Event::Key(Key::Esc));
-                }
+                "close" => {}
                 _ => {}
             }
         });
