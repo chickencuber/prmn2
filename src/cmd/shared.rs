@@ -312,6 +312,7 @@ fn add_project(siv: &mut Cursive, ty: Option<String>, dir: PathBuf, out: bool) {
     );
 }
 
+//TASK(20260501-080854-726-n6-067): make this async
 pub fn get_all_files(conf: &Data, cat: Option<&Category>) -> Result<Vec<String>, anyhow::Error> {
     let mut v = vec![];
     if let Some(cat) = cat {
