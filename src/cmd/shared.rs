@@ -22,6 +22,7 @@ fn open_context_menu(siv: &mut cursive::Cursive) {
         .item("Rename", "rename")
         .item("Delete", "delete")
         .item("Open", "open")
+        .item("Close", "close")
         .on_submit(|siv, action| {
             pop_layer(siv);
             
@@ -34,6 +35,9 @@ fn open_context_menu(siv: &mut cursive::Cursive) {
                 }
                 "open" => {
                     siv.on_event(Event::Key(Key::Enter));
+                }
+                "close" => {
+                    siv.on_event(Event::Key(Key::Esc));
                 }
                 _ => {}
             }
