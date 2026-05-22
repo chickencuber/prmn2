@@ -55,12 +55,14 @@ pub fn print_output() {
     print!("{out}");
 }
 
-pub fn output<T: ToString>(mut conf: Conf, out: bool, v: T) {
+pub fn output<T: ToString>(mut conf: Conf, out: bool, no_last: bool, v: T) {
     match &mut conf {
         Conf::Cursive(siv) => {
             let conf = siv.user_data::<Data>().unwrap();
-            conf.last = Some(PathBuf::from(v.to_string()));
-            conf.save(false).expect("failed to save");
+            if !no_last {
+                conf.last = Some(PathBuf::from(v.to_string()));
+                conf.save(false).expect("failed to save");
+            }
 
             if out {
                 siv.quit();
@@ -72,8 +74,10 @@ pub fn output<T: ToString>(mut conf: Conf, out: bool, v: T) {
             siv.quit();
         }
         Conf::Data(conf) => {
-            conf.last = Some(PathBuf::from(v.to_string()));
-            conf.save(false).expect("failed to save");
+            if !no_last {
+                conf.last = Some(PathBuf::from(v.to_string()));
+                conf.save(false).expect("failed to save");
+            }
             if out {
                 println!("{}", v.to_string());
                 return;
@@ -89,9 +93,10 @@ pub fn use_category(
     name: String,
 ) -> Result<impl View, anyhow::Error> {
     let out = cmd.out;
+    let no_last = cmd.no_last;
     //TASK(20260429-134519-000-n6-759): add a context menu for deleting and renaming
     let mut select = SelectView::new().on_submit(move |siv, v: &PathBuf| {
-        output(Conf::Cursive(siv), out, v.to_string_lossy());
+        output(Conf::Cursive(siv), out, no_last, v.to_string_lossy());
     });
     for file in fs::read_dir(&cat.dir)? {
         let path = file?.path();
@@ -124,7 +129,7 @@ pub fn use_category(
 
                     let mut path = conf.categories[&n].dir.clone();
                     path.push(e);
-                    output(Conf::Cursive(siv), out, path.to_string_lossy());
+                    output(Conf::Cursive(siv), out, no_last, path.to_string_lossy());
                 },
             );
             push_layer(
@@ -252,9 +257,9 @@ pub fn use_category(
             let d = dir.clone();
             //TASK(20260427-141604-587-n6-239): finish logic for adding dialogs
             if types.len() == 1 {
-                add_project(siv, Some(types[0].clone()), d, out);
+                add_project(siv, Some(types[0].clone()), d, out, no_last);
             } else if types.len() == 0 {
-                add_project(siv, None, d, out);
+                add_project(siv, None, d, out, no_last);
             } else {
                 let mut select = SelectView::new();
                 for ty in &types {
@@ -263,7 +268,7 @@ pub fn use_category(
                 let select = select
                     .on_submit(move |siv, item: &String| {
                         pop_layer(siv);
-                        add_project(siv, Some(item.clone()), d.clone(), out);
+                        add_project(siv, Some(item.clone()), d.clone(), out, no_last);
                     })
                     .scrollable();
                 push_layer(siv, Dialog::new().content(select).title("Create"));
@@ -275,7 +280,7 @@ pub fn use_category(
         .full_screen());
 }
 
-fn add_project(siv: &mut Cursive, ty: Option<String>, dir: PathBuf, out: bool) {
+fn add_project(siv: &mut Cursive, ty: Option<String>, dir: PathBuf, out: bool, no_last: bool) {
     let fun = move |siv: &mut Cursive, val: &str| {
         let val = val.trim();
         if val == "" {
@@ -319,7 +324,7 @@ fn add_project(siv: &mut Cursive, ty: Option<String>, dir: PathBuf, out: bool) {
                         .title("Open")
                         .content(TextView::new(val))
                         .button("Yes", move |siv| {
-                            output(Conf::Cursive(siv), out, dir.to_str().unwrap());
+                            output(Conf::Cursive(siv), out, no_last, dir.to_str().unwrap());
                             pop_layer(siv);
                         })
                         .button("No", |siv| {
@@ -327,7 +332,7 @@ fn add_project(siv: &mut Cursive, ty: Option<String>, dir: PathBuf, out: bool) {
                         }),
                 )
                 .on_event('y', move |siv| {
-                    output(Conf::Cursive(siv), out, d.to_str().unwrap());
+                    output(Conf::Cursive(siv), out, no_last, d.to_str().unwrap());
                     pop_layer(siv);
                 })
                 .on_event('n', move |siv| {

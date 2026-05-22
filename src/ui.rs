@@ -14,7 +14,7 @@ use crate::{
     cmd::shared::{Conf, output}, data::Data, wrapper::{Mode, ModeView}
 };
 
-pub fn setup(conf: Data, out: bool) -> Cursive {
+pub fn setup(conf: Data, out: bool, no_last: bool) -> Cursive {
     let mut siv = Cursive::new();
     siv.set_theme(crate::theme::custom());
     let mut i = 1;
@@ -38,7 +38,7 @@ pub fn setup(conf: Data, out: bool) -> Cursive {
         let c = conf.last.clone();
         if let Some(last) = c {
             if last.is_dir() {
-                output(Conf::Data(conf), out, last.to_string_lossy());
+                output(Conf::Data(conf), out, no_last, last.to_string_lossy());
             }
         }
     });

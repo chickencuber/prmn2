@@ -17,7 +17,7 @@ fn fun<F: Fn(Commands, Cursive) -> R, R: GetCursive>(f: F) -> impl Fn(Commands) 
         if !stdout().is_terminal() {
             cmd.out = true;
         }
-        let siv = setup(Data::new().expect("failed to load config"), cmd.out);
+        let siv = setup(Data::new().expect("failed to load config"), cmd.out, cmd.no_last);
         if let Some(mut siv) = f(cmd, siv).get_cursive() {
             siv.run();
         }

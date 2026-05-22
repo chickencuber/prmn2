@@ -15,7 +15,7 @@ use crate::{
     ui::{self, push_layer}, wrapper::{Mode, Modeable},
 };
 
-pub fn selector(out: bool, siv: &mut Cursive) -> impl View {
+pub fn selector(out: bool, no_last: bool, siv: &mut Cursive) -> impl View {
     return ui::fuzzy_picker(
         get_all_files(siv.user_data().unwrap(), None).expect("couldn't get the files"),
         move |siv, e| {
@@ -23,13 +23,14 @@ pub fn selector(out: bool, siv: &mut Cursive) -> impl View {
             let o: Vec<String> = e.split("/").map(|s| s.to_string()).collect();
             let mut path = conf.categories[&o[0]].dir.clone();
             path.push(&o[1]);
-            output(Conf::Cursive(siv), out, path.to_string_lossy());
+            output(Conf::Cursive(siv), out, no_last, path.to_string_lossy());
         },
     );
 }
 
 pub fn start(cmd: Commands, mut siv: Cursive) -> Cursive {
     let out = cmd.out;
+    let no_last = cmd.no_last;
     let mut select = SelectView::new().on_submit(move |siv, (cat, name): &(Category, String)| {
         let select = use_category(cat, &cmd, name.clone()).expect("failed to read dir");
         push_layer(siv, Dialog::new().content(select).title(name).with_mode(Mode::Category));
@@ -42,7 +43,7 @@ pub fn start(cmd: Commands, mut siv: Cursive) -> Cursive {
     }
     select.sort_by_label();
     let event = OnEventView::new(select.scrollable()).on_event('f', move |siv| {
-        let select = selector(out, siv);
+        let select = selector(out, no_last, siv);
         push_layer(siv, Dialog::new().content(select).title("Search"));
     });
     push_layer(&mut siv, event.full_screen());

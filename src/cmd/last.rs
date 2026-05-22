@@ -14,7 +14,7 @@ pub fn last(cmd: Commands, mut siv: Cursive) -> Option<Cursive> {
     let c = conf.last.clone();
     if let Some(last) = c {
         if last.is_dir() {
-            output(Conf::Data(conf), cmd.out, last.to_string_lossy());
+            output(Conf::Data(conf), cmd.out, cmd.no_last, last.to_string_lossy());
             return None;
         }
     }

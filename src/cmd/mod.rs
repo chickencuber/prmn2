@@ -14,6 +14,7 @@ define! {
     help: HELP;
           flags {
               out: bool = "o" | "out",
+              no_last: bool = "n" | "no-last",
           };
           args {};
 }
@@ -22,6 +23,7 @@ pub const HELP: &str = r#"usage: prmn [subcommand]
     ==========FLAGS==========
     -h | --help | -?: displays this message
     -o | --out: outputs the project dir into stdout instead of opening the editor
+    -n | --no-last: prevents prmn from saving the last opened project
     =======SUB COMMANDS======
     [none]: shows the menu
     help | ?: shows this message
