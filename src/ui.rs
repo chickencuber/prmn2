@@ -38,7 +38,7 @@ pub fn setup(conf: Data, out: bool, no_last: bool) -> Cursive {
         let c = conf.last.clone();
         if let Some(last) = c {
             if last.is_dir() {
-                output(Conf::Data(conf), out, no_last, last.to_string_lossy());
+                output(Conf::Cursive(siv), out, no_last, last.to_string_lossy());
             }
         }
     });
