@@ -2,6 +2,10 @@
 name = "prmn"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+authors = ["chickencuber"]
+repository = "https://github.com/chickencuber/prmn2"
+description = "a project management tui app"
 
 [dependencies]
 ron = "0.12.1"
